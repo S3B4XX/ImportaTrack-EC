@@ -1,0 +1,41 @@
+# Blueprint de Render: crea la base PostgreSQL y el servicio web con Docker.
+# En Render: New → Blueprint → elige este repositorio.
+databases:
+  - name: importatrack-db
+    plan: free
+    databaseName: importatrack
+    user: importatrack
+
+services:
+  - type: web
+    name: importatrack-ec
+    runtime: docker
+    plan: free
+    healthCheckPath: /up
+    envVars:
+      - key: APP_KEY            # pega aquí la salida de: php artisan key:generate --show
+        sync: false
+      - key: APP_NAME
+        value: ImportaTrack EC
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_LOCALE
+        value: es
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_URL
+        fromDatabase:
+          name: importatrack-db
+          property: connectionString
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: SESSION_DRIVER
+        value: database
+      - key: CACHE_STORE
+        value: database
+      # Encendido a propósito: es una demo académica con datos ficticios y el docente
+      # necesita ver el usuario de prueba. En un sistema real debe ir en "false".
+      - key: SHOW_DEMO_CREDENTIALS
+        value: "true"

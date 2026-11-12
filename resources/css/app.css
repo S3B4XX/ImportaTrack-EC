@@ -1,0 +1,55 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+@source '../../app/Enums/*.php';
+
+/*
+ * TOKENS DE DISEÑO
+ * Tailwind 4 define los tokens aquí, con @theme (ya no existe tailwind.config.js).
+ * Cada variable crea sus utilidades: --color-primario genera bg-primario, text-primario,
+ * border-primario, etc. Los nombres dicen para qué sirve el color, no qué color es:
+ * si mañana cambia el tono institucional, se cambia en un solo lugar.
+ */
+@theme {
+    /* Tipografía: una familia para la interfaz y otra, de ancho fijo, para las cifras. */
+    --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, 'Courier New', monospace;
+
+    /* Color institucional (azul petróleo): barra superior, encabezados y botones primarios. */
+    --color-primario: #0f3d5c;
+    --color-primario-oscuro: #0a2c43; /* al pasar el cursor o presionar */
+    --color-primario-claro: #e7eef3; /* fondo suave: fila activa, etiqueta informativa */
+
+    /* Neutros fríos (escala slate): la base de toda la interfaz. */
+    --color-fondo: #f8fafc; /* fondo de la página */
+    --color-superficie: #ffffff; /* tablas, formularios y paneles */
+    --color-borde: #e2e8f0; /* bordes de 1 px en lugar de sombras */
+    --color-texto: #1e293b; /* texto principal */
+    --color-texto-suave: #64748b; /* texto secundario y ayudas */
+
+    /*
+     * Semáforo de cumplimiento y mensajes del sistema.
+     * Los tres tonos tienen contraste suficiente sobre blanco (WCAG AA) y en las vistas
+     * siempre van con texto o un icono: el color nunca es la única señal.
+     */
+    --color-exito: #15803d;
+    --color-exito-claro: #f0fdf4;
+    --color-alerta: #b45309;
+    --color-alerta-claro: #fffbeb;
+    --color-peligro: #b91c1c;
+    --color-peligro-claro: #fef2f2;
+}
+
+/*
+ * Única regla fuera de los tokens: la paginación la genera Laravel (no es una vista del proyecto),
+ * así que su alto mínimo de 44 px para pantallas táctiles se fija aquí.
+ * Todo lo demás se estiliza con utilidades dentro de los componentes Blade.
+ */
+@layer components {
+    nav[role='navigation'] .inline-flex {
+        @apply min-h-11;
+    }
+}
