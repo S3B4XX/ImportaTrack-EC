@@ -7,10 +7,13 @@
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white)
 ![PHPUnit](https://img.shields.io/badge/PHPUnit-45_pruebas-3C9CD7)
+[![Render](https://img.shields.io/badge/Render-en_l%C3%ADnea-46E3B7?logo=render&logoColor=white)](https://importatrack-ec.onrender.com)
 
 Sistema web para que una agencia de carga gestione las importaciones de sus clientes hacia Ecuador. Calcula la **liquidación de importación** (CIF, Ad Valorem, FODINFA, IVA y costo unitario puesto en bodega) y el **indicador de cumplimiento** de tiempos con semáforo.
 
 > Ingeniería Web (ISWZ3101) · Universidad de las Américas (UDLA) · Autor: Sebastián Almachi
+
+**Aplicación en línea:** <https://importatrack-ec.onrender.com> (usuario `admin@importatrack.ec`, contraseña `ImportaTrack2026`)
 
 ## Tabla de contenidos
 
@@ -64,7 +67,8 @@ Pendiente para el Progreso 2: panel del Operador (registro de importaciones y ev
 | ORM | Eloquent | Modelos, relaciones, migraciones y seeders |
 | Base de datos | PostgreSQL (producción) y SQLite (local y pruebas) | Persistencia; se cambia solo con `DB_CONNECTION` |
 | Vistas | Blade | Plantillas HTML semánticas con layouts y componentes |
-| Estilos | Tailwind CSS 4 | Diseño Mobile First (360 px primero, luego `md:`) |
+| Estilos | Tailwind CSS 4 | Diseño Mobile First (360 px primero, luego `md:`) con tokens de diseño en `@theme` |
+| Tipografía | IBM Plex Sans e IBM Plex Mono | Interfaz legible y cifras con `tabular-nums`, alineadas por columna |
 | Empaquetado | Vite 7 | Compila y minifica el CSS y el JS |
 | JavaScript | Vanilla ES6 (`fetch`) | Dropdown en cascada; sin frameworks |
 | Pruebas | PHPUnit 11 | 45 pruebas unitarias y funcionales |
@@ -77,7 +81,7 @@ El flujo siempre es el estándar de Laravel: **ruta → controlador → FormRequ
 | Capa | Responsabilidad | Archivos |
 |---|---|---|
 | **Modelo** | Estructura, relaciones y cálculos del Core | `app/Models/`: `Role`, `User`, `Supplier`, `TaxRate`, `TariffSection`, `TariffChapter`, `TariffItem`, `Import`, `ImportItem`, `TrackingEvent` · `app/Enums/`: `ImportStatus`, `CustomsChannel`, `TransportMode`, `Compliance` · `app/Support/Money.php` |
-| **Vista** | Solo presentación | `resources/views/layouts/` (`app`, `guest`) · `resources/views/components/` (`field`, `page-header`, `delete-button`, `empty`, `compliance-badge`) · `resources/views/admin/` (una carpeta por módulo) · `resources/views/auth/login.blade.php` |
+| **Vista** | Solo presentación | `resources/views/layouts/` (`app`, `guest`) · `resources/views/components/` (`button`, `input`, `field`, `form-actions`, `table`, `panel`, `badge`, `status-badge`, `compliance-badge`, `cifra`, `page-header`, `nav-link`, `delete-button`, `empty`) · `resources/views/partials/` (`head`, `flash`) · `resources/views/admin/` (una carpeta por módulo) · `resources/views/auth/login.blade.php` |
 | **Controlador** | Flujo de cada petición | `app/Http/Controllers/Admin/`: `DashboardController`, `UserController`, `SupplierController`, `TariffItemController`, `TariffChapterController`, `TaxRateController`, `ImportController` · `app/Http/Controllers/Auth/LoginController.php` · `app/Http/Controllers/HomeController.php` |
 | Validación | Reglas del servidor | `app/Http/Requests/Admin/`: `UserRequest`, `SupplierRequest`, `TariffItemRequest`, `TaxRateRequest`, `ImportFilterRequest` · `app/Http/Requests/Auth/LoginRequest.php` · `app/Rules/EcuadorianId.php` |
 | Rutas | Definen las URL | `routes/web.php` |
@@ -197,6 +201,8 @@ Para volver a dejar la base como al inicio: `php artisan migrate:fresh --seed`.
 
 ## Cómo usar la aplicación
 
+Ábrela en línea en <https://importatrack-ec.onrender.com> o en local en <http://127.0.0.1:8000> (ver [Instalación y ejecución](#instalación-y-ejecución)).
+
 Usuarios de demostración (todos con la contraseña `ImportaTrack2026`):
 
 | Rol | Correo | Qué puede ver |
@@ -220,7 +226,7 @@ Recorrido sugerido con el Administrador:
 |---|---|---|---|
 | Local (Windows) | SQLite | Archivo `database/database.sqlite` | `DB_CONNECTION=sqlite` en `.env` |
 | Pruebas | SQLite en memoria | No guarda nada en disco | `phpunit.xml` |
-| Producción (Render) | PostgreSQL | Base gratuita de Render | `DB_CONNECTION=pgsql` y `DB_URL` |
+| Producción (Render) | PostgreSQL | Base gratuita de Render (`importatrack-db`) | `DB_CONNECTION=pgsql` y `DB_URL` |
 
 El código es el mismo en los dos motores: solo cambia `DB_CONNECTION`. Las migraciones usan únicamente el constructor de esquemas de Laravel, sin SQL propio de ningún motor.
 
@@ -259,14 +265,16 @@ Son 45 pruebas: validación de RUC/cédula, dropdown en cascada, permisos por ro
 
 ## Despliegue en Render
 
-El repositorio trae `Dockerfile` (PHP 8.3 + Apache) y `render.yaml`.
+La aplicación está publicada en **<https://importatrack-ec.onrender.com>**. Cada `git push` a la rama `main` vuelve a desplegarla automáticamente.
+
+El repositorio trae `Dockerfile` (PHP 8.3 + Apache) y `render.yaml`. Para desplegarla desde cero:
 
 1. Genera una clave con `php artisan key:generate --show` y cópiala.
 2. En [Render](https://render.com) elige **New → Blueprint** y conecta este repositorio.
 3. Cuando lo pida, pega la clave en `APP_KEY` y crea el Blueprint. Render crea la base PostgreSQL y el servicio web.
 4. En cada arranque el contenedor ejecuta las migraciones y carga los datos iniciales **solo si la base está vacía** (`php artisan app:bootstrap`).
 
-> El plan gratuito de Render "duerme" el servicio tras un rato sin uso, así que la primera visita puede tardar unos segundos.
+> Límites del plan gratuito de Render: el servicio se duerme tras unos minutos sin uso, así que la primera visita puede tardar cerca de un minuto; y la base PostgreSQL gratuita expira 30 días después de creada.
 
 ## Estructura del proyecto
 
@@ -292,11 +300,11 @@ ImportaTrack-EC/
 ├── lang/es/                    # Mensajes de validación y errores en español
 ├── public/                     # Punto de entrada (index.php) y assets compilados
 ├── resources/
-│   ├── css/app.css             # Tailwind y clases reutilizables (btn, input, card)
+│   ├── css/app.css             # Tailwind: tokens de diseño (@theme) y tipografía
 │   ├── js/app.js               # JavaScript vanilla: dropdown en cascada
 │   └── views/
 │       ├── layouts/            # app (con sesión) y guest (login)
-│       ├── components/         # x-field, x-page-header, x-delete-button, x-empty, x-compliance-badge
+│       ├── components/         # x-button, x-input, x-field, x-table, x-badge, x-cifra… (estilo centralizado)
 │       ├── partials/           # head y mensajes flash
 │       ├── auth/               # Login
 │       └── admin/              # Una carpeta de vistas por módulo
